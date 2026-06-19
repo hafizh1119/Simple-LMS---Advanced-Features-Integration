@@ -2,33 +2,43 @@
 
 ## Endpoint yang Di-cache
 
-| Endpoint                  | Key Pattern           | TTL     |
-| ------------------------- | --------------------- | ------- |
+| Endpoint | Key Pattern | TTL |
+|----------|------------|-----|
 | `GET /api/courses-cached` | `courses:list:{hash}` | 5 menit |
+| `GET /api/courses/{id}` | `course:{id}` | 5 menit |
 
 ## Alur Caching
 
 ```mermaid
 sequenceDiagram
-    participant Client
+    actor User
     participant API as Django API
     participant Redis as Redis Cache
-    participant DB as PostgreSQL
+    participant DB as PostgreSQL Database
 
-    Client->>API: GET /api/courses-cached?search=python
-    API->>API: Generate cache key dari parameter search
-    API->>Redis: Cek key: courses:list:{hash}
+    User->>API: Request Course Data
+    API->>Redis: Check Cache Key
 
-    alt Cache Hit (Data ditemukan)
-        Redis-->>API: Kembalikan data dari cache
-        API-->>Client: Response dalam <10ms
-        Note over Client,API: 97% lebih cepat dari tanpa cache
-    else Cache Miss (Data tidak ada)
-        Redis-->>API: Cache kosong
-        API->>DB: SELECT * FROM courses WHERE name ILIKE '%python%'
-        DB-->>API: Hasil query (150ms)
-        API->>Redis: Simpan hasil ke cache dengan TTL 5 menit
-        API-->>Client: Response
-        Note over Client,API: Data disimpan untuk request berikutnya
+    alt Cache Hit
+        Redis-->>API: Cached Data
+        API-->>User: Return Response
+    else Cache Miss
+        Redis-->>API: Cache Not Found
+        API->>DB: Query Course Data
+        DB-->>API: Return Result
+        API->>Redis: Save Cache (TTL 5 Minutes)
+        API-->>User: Return Response
     end
+```
+
+## Cache Invalidation Strategy
+
+```mermaid
+flowchart LR
+
+    A[Create Course] --> B[Delete Course List Cache]
+    C[Update Course] --> D[Delete Course List Cache]
+    C --> E[Delete Course Detail Cache]
+    F[Delete Course] --> G[Delete Course List Cache]
+    F --> H[Delete Course Detail Cache]
 ```
