@@ -1,47 +1,35 @@
 ```mermaid
-flowchart LR
+sequenceDiagram
 
-    USER([👤 User])
+    actor User
 
-    API([🚀 Django API])
+    participant API as Django API
+    participant Redis as Redis Cache
+    participant DB as PostgreSQL
 
-    PG[(🐘 PostgreSQL)]
-    REDIS[(⚡ Redis Cache)]
-    MONGO[(🍃 MongoDB)]
+    User->>API: GET /api/courses-cached
 
-    ACT[(📋 Activity Logs)]
-    ANALYTICS[(📊 Learning Analytics)]
+    API->>Redis: Check Cache Key
 
-    RABBIT([🐰 RabbitMQ])
+    alt Cache Hit
 
-    WORKER([⚙️ Celery Worker])
-    BEAT([⏰ Celery Beat])
-    FLOWER([🌸 Flower])
+        Redis-->>API: Return Cached Data
 
-    EMAIL([📧 Enrollment Email])
-    CERT([🏆 Certificate PDF])
-    REPORT([📄 CSV Report])
-    STATS([📈 Course Statistics])
+        API-->>User: Response Data
 
-    USER --> API
+    else Cache Miss
 
-    API --> PG
-    API --> REDIS
-    API --> MONGO
+        Redis-->>API: Cache Not Found
 
-    MONGO --> ACT
-    MONGO --> ANALYTICS
+        API->>DB: Query Course Data
 
-    API --> RABBIT
+        DB-->>API: Return Course Data
 
-    RABBIT --> WORKER
+        API->>Redis: Save Cache (TTL 5 Minutes)
 
-    BEAT --> WORKER
+        Redis-->>API: Cache Stored
 
-    FLOWER -. Monitor .-> WORKER
+        API-->>User: Response Data
 
-    WORKER --> EMAIL
-    WORKER --> CERT
-    WORKER --> REPORT
-    WORKER --> STATS
+    end
 ```
