@@ -1,6 +1,6 @@
-# Testing Results
+# Architecture Diagram
 
-Architecture Diagram
+Diagram arsitektur sistem yang menunjukkan integrasi Django API, PostgreSQL, Redis, MongoDB, Celery, RabbitMQ, dan Flower.
 
 ```mermaid
 graph TD
@@ -28,16 +28,57 @@ graph TD
     RabbitMQ[RabbitMQ Management]
 ```
 
-## Caching Strategy - Redis
+---
 
-Sistem menggunakan Redis sebagai caching layer untuk mengurangi query ke PostgreSQL dan meningkatkan performa API.
+# Docker Services
+
+Screenshot berikut menunjukkan seluruh service Docker berhasil berjalan.
+
+**Screenshot:** `docker ps`
+
+![Docker Services](docs/images/docker-services.png)
+
+Container yang aktif:
+
+* lms-app
+* lms-db
+* lms-redis
+* lms-mongodb
+* lms-rabbitmq
+* lms-celery-worker
+* lms-celery-beat
+* lms-flower
+
+---
+
+# API Documentation
+
+Screenshot berikut menunjukkan dokumentasi API berhasil digenerate menggunakan Swagger.
+
+**Screenshot:** `http://localhost:8000/api/docs`
+
+![Swagger API](docs/images/swagger-api.png)
+
+Endpoint yang tersedia:
+
+* Authentication
+* Course Management
+* Enrollment
+* Progress Tracking
+* Async Processing
+
+---
+
+# Caching Strategy - Redis
+
+Sistem menggunakan Redis sebagai caching layer untuk meningkatkan performa API dan mengurangi query langsung ke PostgreSQL.
 
 ### Endpoint yang Di-cache
 
-| Endpoint                  | Key Pattern           | TTL     |
-| ------------------------- | --------------------- | ------- |
-| `GET /api/courses-cached` | `courses:list:{hash}` | 5 menit |
-| `GET /api/courses/{id}`   | `course:{id}`         | 5 menit |
+| Endpoint                | Key Pattern         | TTL     |
+| ----------------------- | ------------------- | ------- |
+| GET /api/courses-cached | courses:list:{hash} | 5 menit |
+| GET /api/courses/{id}   | course:{id}         | 5 menit |
 
 ### Alur Caching
 
@@ -65,8 +106,6 @@ sequenceDiagram
 
 ### Cache Invalidation Strategy
 
-Cache akan dihapus ketika data course mengalami perubahan.
-
 ```mermaid
 flowchart LR
     A[Create Course] --> B[Delete Course List Cache]
@@ -76,31 +115,41 @@ flowchart LR
     F --> H[Delete Course Detail Cache]
 ```
 
-Implementasi cache invalidation dilakukan menggunakan:
+---
 
-```python
-cache.delete_pattern("courses:list:*")
-cache.delete(f"course:{id}")
-```
+# Redis Cache
 
-## Redis Cache
+Screenshot berikut menunjukkan key cache berhasil tersimpan di Redis.
 
-Bukti Course List Cache dan Course Detail Cache.
+**Screenshot:** `redis-cli -> KEYS *`
 
 ![Redis Cache](docs/images/redis-cache.png)
 
-Terlihat key cache:
+Key yang berhasil dibuat:
 
-- simple_lms:1:courses:list:...
-- simple_lms:1:course:1
+* simple_lms:1:courses:list:...
+* simple_lms:1:course:1
 
 ---
 
-## Task Flow Documentation
+# Rate Limiting
 
-### 1. Enrollment Email Task
+Screenshot berikut menunjukkan implementasi Redis Rate Limiting.
 
-Task ini dijalankan ketika mahasiswa berhasil melakukan enrollment course.
+**Screenshot:** `lms/throttle.py`
+
+![Rate Limiting](docs/images/rate-limiting.png)
+
+Konfigurasi:
+
+* Rate Limit : 60 Request / Minute
+* Menggunakan Redis sebagai penyimpanan counter request.
+
+---
+
+# Task Flow Documentation
+
+### Enrollment Email Task
 
 ```mermaid
 flowchart LR
@@ -109,11 +158,7 @@ flowchart LR
     C --> D[Email Sent]
 ```
 
----
-
-### 2. Certificate Generation Task
-
-Task ini dijalankan ketika mahasiswa menyelesaikan course.
+### Certificate Generation Task
 
 ```mermaid
 flowchart LR
@@ -122,11 +167,7 @@ flowchart LR
     C --> D[Certificate PDF]
 ```
 
----
-
-### 3. Export Course Report Task
-
-Task ini digunakan untuk membuat laporan peserta course dalam format CSV.
+### Export Course Report Task
 
 ```mermaid
 flowchart LR
@@ -136,11 +177,7 @@ flowchart LR
     D --> E[Email Notification]
 ```
 
----
-
-### 4. Update Course Statistics Task
-
-Task ini dijalankan secara berkala menggunakan Celery Beat.
+### Update Course Statistics Task
 
 ```mermaid
 flowchart LR
@@ -149,76 +186,143 @@ flowchart LR
     B --> C[Update Enrollment Count]
 ```
 
-## MongoDB Collections
+---
 
-Bukti collection MongoDB berhasil dibuat.
+# MongoDB Collections
+
+Screenshot berikut menunjukkan collection MongoDB berhasil dibuat.
+
+**Screenshot:** `show collections`
 
 ![MongoDB Collections](docs/images/mongodb-collections.png)
 
 Collection:
 
-- activity_logs
-- learning_analytics
+* activity_logs
+* learning_analytics
 
 ---
 
-## MongoDB Aggregation Query
+# Activity Logs
 
-Bukti aggregation query berhasil dijalankan.
+Screenshot berikut menunjukkan aktivitas pengguna berhasil dicatat ke MongoDB.
+
+**Screenshot:** `db.activity_logs.find().limit(5).pretty()`
+
+![Activity Logs](docs/images/activity-logs.png)
+
+Aktivitas yang tercatat:
+
+* list_cached
+* enroll_async
+* complete_course
+
+---
+
+# Learning Analytics
+
+Screenshot berikut menunjukkan data analytics pembelajaran tersimpan di MongoDB.
+
+**Screenshot:** `db.learning_analytics.find().limit(5).pretty()`
+
+![Learning Analytics](docs/images/learning-analytics.png)
+
+Data yang tersimpan:
+
+* user_id
+* course_id
+* event_type
+* timestamp
+
+---
+
+# Aggregation Query
+
+Screenshot berikut menunjukkan query agregasi MongoDB berhasil dijalankan.
+
+**Screenshot:** `db.learning_analytics.aggregate(...)`
 
 ![MongoDB Aggregation](docs/images/mongodb-aggregation.png)
 
+Tujuan:
+
+* Menghitung total view per course
+* Menentukan course yang paling populer
+
 ---
 
-## Flower Monitoring
+# Flower Monitoring
 
-Bukti seluruh Celery Task berhasil dijalankan.
+Screenshot berikut menunjukkan seluruh task Celery berhasil dijalankan.
 
 ![Flower Monitoring](docs/images/flower-success.png)
 
-Task:
+Task yang berhasil dieksekusi:
 
-- send_enrollment_email
-- generate_certificate
-- export_course_report
-- update_course_statistics
+* send_enrollment_email
+* generate_certificate
+* export_course_report
+* update_course_statistics
 
-Status:
-
-SUCCESS
+Status: SUCCESS
 
 ---
 
-## Certificate Generation
+# RabbitMQ Dashboard
 
-Bukti file PDF berhasil dibuat.
+Screenshot berikut menunjukkan RabbitMQ Management Dashboard berhasil berjalan.
 
-![Certificate](docs/images/certificate-generated.png)
+![RabbitMQ Dashboard](docs/images/rabbitmq-dashboard.png)
+
+Fungsi:
+
+* Message Broker
+* Queue Management
+* Monitoring Queue
+
+---
+
+# Certificate Generation
+
+Screenshot berikut menunjukkan file sertifikat PDF berhasil dibuat.
+
+![Certificate Generation](docs/images/certificate-generated.png)
 
 File:
 
-certificate_21_1_1781839120.pdf
+* certificate_21_1_1781839120.pdf
 
 ---
 
-## CSV Report
+# CSV Report Generation
 
-Bukti file CSV berhasil dibuat.
+Screenshot berikut menunjukkan file laporan CSV berhasil dibuat.
 
 ![CSV Report](docs/images/csv-report.png)
 
----
+File:
 
-## RabbitMQ Dashboard
-
-Bukti RabbitMQ berjalan.
-
-![RabbitMQ](docs/images/rabbitmq-dashboard.png)
+* report_course_54_1781840103.csv
 
 ---
 
-## Swagger Documentation
+# Testing Results
 
-Bukti endpoint API tersedia.
+| Fitur                  | Status  |
+| ---------------------- | ------- |
+| Redis Cache            | SUCCESS |
+| Rate Limiting          | SUCCESS |
+| MongoDB Logging        | SUCCESS |
+| Learning Analytics     | SUCCESS |
+| Aggregation Query      | SUCCESS |
+| Celery Tasks           | SUCCESS |
+| RabbitMQ               | SUCCESS |
+| Flower Monitoring      | SUCCESS |
+| Certificate Generation | SUCCESS |
+| CSV Report Export      | SUCCESS |
 
-![Swagger](docs/images/swagger-api.png)
+---
+
+# Conclusion
+
+Seluruh fitur Advanced Features Integration berhasil diimplementasikan dan diuji menggunakan Redis, MongoDB, Celery, RabbitMQ, Flower, PostgreSQL, dan Docker. Seluruh requirement tugas berhasil dipenuhi dan berjalan dengan baik.
