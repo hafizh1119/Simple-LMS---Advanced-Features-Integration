@@ -57,7 +57,7 @@ Screenshot berikut menunjukkan dokumentasi API berhasil digenerate menggunakan S
 
 **Screenshot:** `http://localhost:8000/api/docs`
 
-![Swagger API](docs/images/swagger-api.png)
+![Swagger API](docs/API.png)
 
 Endpoint yang tersedia:
 
