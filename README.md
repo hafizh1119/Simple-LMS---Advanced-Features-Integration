@@ -36,7 +36,7 @@ Screenshot berikut menunjukkan seluruh service Docker berhasil berjalan.
 
 **Screenshot:** `docker ps`
 
-![Docker Services](docs/images/docker-services.png)
+![Swagger API](docs/Docker Services.png)
 
 Container yang aktif:
 
@@ -123,7 +123,7 @@ Screenshot berikut menunjukkan key cache berhasil tersimpan di Redis.
 
 **Screenshot:** `redis-cli -> KEYS *`
 
-![Redis Cache](docs/images/redis-cache.png)
+![Swagger API](docs/Redis Cache.png)
 
 Key yang berhasil dibuat:
 
@@ -138,7 +138,7 @@ Screenshot berikut menunjukkan implementasi Redis Rate Limiting.
 
 **Screenshot:** `lms/throttle.py`
 
-![Rate Limiting](docs/images/rate-limiting.png)
+![Swagger API](docs/Rate Limiting.png)
 
 Konfigurasi:
 
@@ -194,7 +194,7 @@ Screenshot berikut menunjukkan collection MongoDB berhasil dibuat.
 
 **Screenshot:** `show collections`
 
-![MongoDB Collections](docs/images/mongodb-collections.png)
+![Swagger API](docs/MongoDB Collections.png)
 
 Collection:
 
@@ -209,7 +209,7 @@ Screenshot berikut menunjukkan aktivitas pengguna berhasil dicatat ke MongoDB.
 
 **Screenshot:** `db.activity_logs.find().limit(5).pretty()`
 
-![Activity Logs](docs/images/activity-logs.png)
+![Swagger API](docs/Activity Logs.png)
 
 Aktivitas yang tercatat:
 
@@ -225,7 +225,7 @@ Screenshot berikut menunjukkan data analytics pembelajaran tersimpan di MongoDB.
 
 **Screenshot:** `db.learning_analytics.find().limit(5).pretty()`
 
-![Learning Analytics](docs/images/learning-analytics.png)
+![Swagger API](docs/Learning Analytics.png)
 
 Data yang tersimpan:
 
@@ -242,7 +242,7 @@ Screenshot berikut menunjukkan query agregasi MongoDB berhasil dijalankan.
 
 **Screenshot:** `db.learning_analytics.aggregate(...)`
 
-![MongoDB Aggregation](docs/images/mongodb-aggregation.png)
+![Swagger API](docs/Aggregation Query.png)
 
 Tujuan:
 
@@ -255,7 +255,7 @@ Tujuan:
 
 Screenshot berikut menunjukkan seluruh task Celery berhasil dijalankan.
 
-![Flower Monitoring](docs/images/flower-success.png)
+![Swagger API](docs/Flower.png)
 
 Task yang berhasil dieksekusi:
 
@@ -272,7 +272,7 @@ Status: SUCCESS
 
 Screenshot berikut menunjukkan RabbitMQ Management Dashboard berhasil berjalan.
 
-![RabbitMQ Dashboard](docs/images/rabbitmq-dashboard.png)
+![Swagger API](docs/RabbitMQ.png)
 
 Fungsi:
 
@@ -286,7 +286,7 @@ Fungsi:
 
 Screenshot berikut menunjukkan file sertifikat PDF berhasil dibuat.
 
-![Certificate Generation](docs/images/certificate-generated.png)
+![Swagger API](docs/CSV Report Generation.png)
 
 File:
 
@@ -298,31 +298,10 @@ File:
 
 Screenshot berikut menunjukkan file laporan CSV berhasil dibuat.
 
-![CSV Report](docs/images/csv-report.png)
+![Swagger API](docs/CSV Report Generation.png)
 
 File:
 
 * report_course_54_1781840103.csv
 
 ---
-
-# Testing Results
-
-| Fitur                  | Status  |
-| ---------------------- | ------- |
-| Redis Cache            | SUCCESS |
-| Rate Limiting          | SUCCESS |
-| MongoDB Logging        | SUCCESS |
-| Learning Analytics     | SUCCESS |
-| Aggregation Query      | SUCCESS |
-| Celery Tasks           | SUCCESS |
-| RabbitMQ               | SUCCESS |
-| Flower Monitoring      | SUCCESS |
-| Certificate Generation | SUCCESS |
-| CSV Report Export      | SUCCESS |
-
----
-
-# Conclusion
-
-Seluruh fitur Advanced Features Integration berhasil diimplementasikan dan diuji menggunakan Redis, MongoDB, Celery, RabbitMQ, Flower, PostgreSQL, dan Docker. Seluruh requirement tugas berhasil dipenuhi dan berjalan dengan baik.
