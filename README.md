@@ -1,22 +1,32 @@
 # Testing Results
 
 Architecture Diagram
+
+```mermaid
 graph TD
-    User --> DjangoAPI
 
-    DjangoAPI --> PostgreSQL
-    DjangoAPI --> Redis
-    DjangoAPI --> MongoDB
+    User[User]
 
-    DjangoAPI --> Celery
+    User --> Django[Django API]
 
-    Celery --> EmailTask
-    Celery --> CertificateTask
-    Celery --> ReportTask
-    Celery --> StatisticsTask
+    Django --> PostgreSQL[(PostgreSQL)]
+    Django --> Redis[(Redis Cache & Rate Limiting)]
+    Django --> MongoDB[(MongoDB)]
 
-    Flower --> Celery
-    RabbitMQ --> Celery
+    Django --> Celery[Celery Tasks]
+
+    Celery --> Email[send_enrollment_email]
+    Celery --> Certificate[generate_certificate]
+    Celery --> Report[export_course_report]
+    Celery --> Statistics[update_course_statistics]
+
+    Flower[Flower Monitoring] --> Celery
+
+    MongoDB --> ActivityLogs[activity_logs]
+    MongoDB --> LearningAnalytics[learning_analytics]
+
+    RabbitMQ[RabbitMQ Management]
+```
 
 ## Redis Cache
 
